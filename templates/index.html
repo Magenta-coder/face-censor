@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Upload Video – Face Censor (DNN SSD)</title>
+  <style>
+    body { font-family: system-ui, Arial, sans-serif; margin: 2rem; }
+    fieldset { border-radius: 12px; padding: 1rem 1.25rem; border: 1px solid #ddd; }
+    .row { display: flex; gap: 10px; flex-wrap: wrap; margin: .5rem 0; }
+    input, select, button, label { padding: 10px 12px; border-radius: 10px; }
+    input, select { border: 1px solid #ccc; }
+    button { cursor: pointer; border: none; background: #1e293b; color: #fff; }
+    #status { margin-top: .75rem; font-weight: 600; }
+  </style>
+</head>
+<body>
+  <h1>Sensor Wajah pada Video (OpenCV DNN SSD)</h1>
+
+  <p>Unggah video → server akan mendeteksi wajah dan mengaburkan/pixelate area wajah.
+     Pemrosesan terjadi di server lokal Anda.</p>
+
+  <form id="frm">
+    <fieldset>
+      <legend>Pengaturan</legend>
+
+      <div class="row">
+        <label>File video:
+          <input type="file" id="file" accept="video/*" required />
+        </label>
+
+        <label>Mode:
+          <select id="mode">
+            <option value="blur">Blur</option>
+            <option value="pixelate">Pixelate</option>
+          </select>
+        </label>
+
+        <label>Kekuatan:
+          <input type="number" id="strength" value="31" min="3" max="99" />
+        </label>
+
+        <label>Padding (px):
+          <input type="number" id="padding" value="20" min="0" max="80" />
+        </label>
+      </div>
+
+      <div class="row">
+        <label>Rotate:
+          <select id="rotate">
+            <option value="0">0°</option>
+            <option value="90">90°</option>
+            <option value="180">180°</option>
+            <option value="270">270°</option>
+          </select>
+        </label>
+
+        <label>Confidence (0.1–0.9):
+          <input type="number" id="conf" value="0.5" step="0.05" min="0.1" max="0.9" />
+        </label>
+
+        <label style="display:flex;align-items:center;gap:8px;">
+          <input type="checkbox" id="keep_audio" />
+          Keep audio (butuh ffmpeg)
+        </label>
+      </div>
+
+      <button type="submit">Proses Video</button>
+      <div id="status"></div>
+    </fieldset>
+  </form>
+
+  <script>
+    const frm = document.getElementById('frm');
+    const statusEl = document.getElementById('status');
+
+    frm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const file = document.getElementById('file').files[0];
+      if (!file) { alert('Pilih file video terlebih dahulu'); return; }
+
+      const fd = new FormData();
+      fd.append('file', file);
+      fd.append('mode', document.getElementById('mode').value);
+      fd.append('strength', document.getElementById('strength').value);
+      fd.append('padding', document.getElementById('padding').value);
+      fd.append('rotate', document.getElementById('rotate').value);
+      fd.append('conf', document.getElementById('conf').value);
+      fd.append('keep_audio', document.getElementById('keep_audio').checked ? 'true' : 'false');
+
+      statusEl.textContent = 'Memproses... (durasi tergantung panjang video)';
+      try {
+        const res = await fetch('/api/blur-video', { method: 'POST', body: fd });
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          throw new Error(err.error || res.statusText);
+        }
+        const disp = res.headers.get('Content-Disposition') || '';
+        const m = /filename="?([^"]+)"?/.exec(disp);
+        const filename = m ? m[1] : 'censored.mp4';
+        const blob = await res.blob();
+        const url = URL.createObjectURL(blob);
+
+        const a = document.createElement('a');
+        a.href = url; a.download = filename;
+        document.body.appendChild(a); a.click(); a.remove();
+        URL.revokeObjectURL(url);
+
+        statusEl.textContent = 'Selesai. File hasil diunduh.';
+      } catch (err) {
+        statusEl.textContent = 'Gagal: ' + err.message;
+      }
+    });
+  </script>
+</body>
+</html>
