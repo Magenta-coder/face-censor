@@ -3,110 +3,692 @@
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
-  <title>Upload Video – Face Censor (DNN SSD)</title>
+  <title>Face Censor (DNN)</title>
   <style>
-    body { font-family: system-ui, Arial, sans-serif; margin: 2rem; }
-    fieldset { border-radius: 12px; padding: 1rem 1.25rem; border: 1px solid #ddd; }
-    .row { display: flex; gap: 10px; flex-wrap: wrap; margin: .5rem 0; }
-    input, select, button, label { padding: 10px 12px; border-radius: 10px; }
-    input, select { border: 1px solid #ccc; }
-    button { cursor: pointer; border: none; background: #1e293b; color: #fff; }
-    #status { margin-top: .75rem; font-weight: 600; }
+    :root {
+      --primary: #4361ee;
+      --primary-dark: #3a56d4;
+      --secondary: #7209b7;
+      --accent: #f72585;
+      --light: #f8f9fa;
+      --dark: #212529;
+      --gray: #6c757d;
+      --light-gray: #e9ecef;
+      --success: #4cc9f0;
+      --border-radius: 12px;
+      --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      --transition: all 0.3s ease;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      margin: 0;
+      padding: 0;
+      background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+      color: var(--dark);
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 2rem;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      font-weight: 700;
+      background: linear-gradient(90deg, var(--primary), var(--secondary));
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      margin-bottom: 0.5rem;
+    }
+
+    .subtitle {
+      font-size: 1.1rem;
+      color: var(--gray);
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    .card {
+      background-color: white;
+      border-radius: var(--border-radius);
+      box-shadow: var(--shadow);
+      padding: 2rem;
+      margin-bottom: 2rem;
+    }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      margin-bottom: 1.5rem;
+    }
+
+    .card-icon {
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-right: 1rem;
+      color: white;
+      font-size: 1.5rem;
+    }
+
+    .card-title {
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: var(--dark);
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .form-group {
+      margin-bottom: 1rem;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-weight: 500;
+      color: var(--dark);
+    }
+
+    input, select {
+      width: 100%;
+      padding: 12px 16px;
+      border: 1px solid var(--light-gray);
+      border-radius: var(--border-radius);
+      font-size: 1rem;
+      transition: var(--transition);
+      background-color: white;
+    }
+
+    input:focus, select:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.2);
+    }
+
+    /* Styling untuk slider */
+    .slider-container {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .slider-container input[type="range"] {
+      flex: 1;
+      height: 8px;
+      border-radius: 5px;
+      background: var(--light-gray);
+      outline: none;
+      -webkit-appearance: none;
+    }
+
+    .slider-container input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: var(--primary);
+      cursor: pointer;
+      transition: var(--transition);
+    }
+
+    .slider-container input[type="range"]::-webkit-slider-thumb:hover {
+      background: var(--primary-dark);
+      transform: scale(1.1);
+    }
+
+    .slider-value {
+      min-width: 60px;
+      text-align: center;
+      font-weight: 600;
+      color: var(--primary);
+      background: var(--light);
+      padding: 5px 10px;
+      border-radius: var(--border-radius);
+    }
+
+    /* Styling untuk dropdown dengan nilai preset */
+    .dropdown-container {
+      position: relative;
+    }
+
+    .dropdown-options {
+      display: none;
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      background: white;
+      border: 1px solid var(--light-gray);
+      border-radius: var(--border-radius);
+      box-shadow: var(--shadow);
+      z-index: 10;
+      max-height: 200px;
+      overflow-y: auto;
+    }
+
+    .dropdown-options.show {
+      display: block;
+    }
+
+    .dropdown-option {
+      padding: 10px 16px;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+
+    .dropdown-option:hover {
+      background: var(--light);
+    }
+
+    /* Styling untuk input number dengan tombol */
+    .number-input-container {
+      display: flex;
+      align-items: center;
+    }
+
+    .number-input-container input {
+      text-align: center;
+      margin: 0 5px;
+    }
+
+    .number-btn {
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--light-gray);
+      border: none;
+      border-radius: var(--border-radius);
+      font-size: 1.2rem;
+      font-weight: bold;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+
+    .number-btn:hover {
+      background: var(--primary);
+      color: white;
+    }
+
+    .checkbox-group {
+      display: flex;
+      align-items: center;
+      margin-top: 1rem;
+    }
+
+    .checkbox-group input {
+      width: auto;
+      margin-right: 0.5rem;
+    }
+
+    .checkbox-group label {
+      margin-bottom: 0;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 14px 24px;
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      color: white;
+      border: none;
+      border-radius: var(--border-radius);
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: var(--transition);
+      box-shadow: var(--shadow);
+      margin-top: 1rem;
+    }
+
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+      background: linear-gradient(135deg, var(--primary-dark), var(--secondary));
+    }
+
+    .btn:active {
+      transform: translateY(0);
+    }
+
+    .btn:disabled {
+      background: var(--light-gray);
+      color: var(--gray);
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+
+    .btn i {
+      margin-right: 0.5rem;
+    }
+
+    .progress-section {
+      margin-top: 2rem;
+    }
+
+    .status-container {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.5rem;
+    }
+
+    #status {
+      font-weight: 600;
+      font-size: 1.1rem;
+    }
+
+    .progress-percent {
+      font-weight: 600;
+      color: var(--primary);
+    }
+
+    .progress-bar {
+      height: 14px;
+      background-color: var(--light-gray);
+      border-radius: 999px;
+      overflow: hidden;
+      margin-top: 8px;
+    }
+
+    .progress-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--primary), var(--success));
+      border-radius: 999px;
+      transition: width 0.5s ease;
+    }
+
+    #hint {
+      margin-top: 0.5rem;
+      color: var(--gray);
+      font-size: 0.9rem;
+    }
+
+    .info-box {
+      background-color: var(--light);
+      border-left: 4px solid var(--primary);
+      padding: 1rem;
+      border-radius: 0 var(--border-radius) var(--border-radius) 0;
+      margin-top: 1.5rem;
+    }
+
+    .info-title {
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+      color: var(--dark);
+    }
+
+    .info-text {
+      color: var(--gray);
+      font-size: 0.9rem;
+    }
+
+    @media (max-width: 768px) {
+      .container {
+        padding: 1rem;
+      }
+      
+      h1 {
+        font-size: 2rem;
+      }
+      
+      .card {
+        padding: 1.5rem;
+      }
+      
+      .form-grid {
+        grid-template-columns: 1fr;
+      }
+      
+      .slider-container {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.5rem;
+      }
+      
+      .slider-value {
+        align-self: center;
+      }
+    }
   </style>
 </head>
 <body>
-  <h1>Sensor Wajah pada Video (OpenCV DNN SSD)</h1>
+  <div class="container">
+    <header>
+      <h1>Sensor Wajah (DNN SSD) – Pixelate Only</h1>
+      <p class="subtitle">Unggah video, atur parameter, klik proses. Progress akan tampil di bawah.</p>
+    </header>
 
-  <p>Unggah video → server akan mendeteksi wajah dan mengaburkan/pixelate area wajah.
-     Pemrosesan terjadi di server lokal Anda.</p>
-
-  <form id="frm">
-    <fieldset>
-      <legend>Pengaturan</legend>
-
-      <div class="row">
-        <label>File video:
-          <input type="file" id="file" accept="video/*" required />
-        </label>
-
-        <label>Mode:
-          <select id="mode">
-            <option value="blur">Blur</option>
-            <option value="pixelate">Pixelate</option>
-          </select>
-        </label>
-
-        <label>Kekuatan:
-          <input type="number" id="strength" value="31" min="3" max="99" />
-        </label>
-
-        <label>Padding (px):
-          <input type="number" id="padding" value="20" min="0" max="80" />
-        </label>
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon">
+          <i>⚙️</i>
+        </div>
+        <h2 class="card-title">Pengaturan Pemrosesan Video</h2>
       </div>
 
-      <div class="row">
-        <label>Rotate:
-          <select id="rotate">
-            <option value="0">0°</option>
-            <option value="90">90°</option>
-            <option value="180">180°</option>
-            <option value="270">270°</option>
-          </select>
-        </label>
+      <form id="frm">
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="file">File Video</label>
+            <input type="file" id="file" accept="video/*" required />
+          </div>
 
-        <label>Confidence (0.1–0.9):
-          <input type="number" id="conf" value="0.5" step="0.05" min="0.1" max="0.9" />
-        </label>
+          <div class="form-group">
+            <label for="block_size">Ukuran Blok Pixel</label>
+            <div class="slider-container">
+              <input type="range" id="block_size_slider" min="6" max="60" value="18" step="1">
+              <span id="block_size_value" class="slider-value">18</span>
+            </div>
+            <input type="hidden" id="block_size" value="18" />
+          </div>
 
-        <label style="display:flex;align-items:center;gap:8px;">
+          <div class="form-group">
+            <label for="pad_ratio">Rasio Padding</label>
+            <div class="dropdown-container">
+              <input type="text" id="pad_ratio_display" value="0.25" readonly>
+              <div class="dropdown-options" id="pad_ratio_options">
+                <div class="dropdown-option" data-value="0">0 (Tidak ada)</div>
+                <div class="dropdown-option" data-value="0.1">0.1 (Minimal)</div>
+                <div class="dropdown-option" data-value="0.25">0.25 (Standar)</div>
+                <div class="dropdown-option" data-value="0.4">0.4 (Sedang)</div>
+                <div class="dropdown-option" data-value="0.6">0.6 (Maksimal)</div>
+              </div>
+            </div>
+            <input type="hidden" id="pad_ratio" value="0.25" />
+          </div>
+
+          <div class="form-group">
+            <label for="rotate">Rotasi</label>
+            <select id="rotate">
+              <option value="0">0°</option>
+              <option value="90">90°</option>
+              <option value="180">180°</option>
+              <option value="270">270°</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="conf">Tingkat Kepercayaan</label>
+            <div class="slider-container">
+              <input type="range" id="conf_slider" min="0.1" max="0.9" value="0.5" step="0.05">
+              <span id="conf_value" class="slider-value">0.5</span>
+            </div>
+            <input type="hidden" id="conf" value="0.5" />
+          </div>
+
+          <div class="form-group">
+            <label for="nms_iou">NMS IoU</label>
+            <div class="number-input-container">
+              <button type="button" class="number-btn" id="nms_iou_decrease">-</button>
+              <input type="number" id="nms_iou" value="0.45" step="0.05" min="0.3" max="0.7" readonly>
+              <button type="button" class="number-btn" id="nms_iou_increase">+</button>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="use_flip">Gunakan Flip</label>
+            <select id="use_flip">
+              <option value="true" selected>Ya</option>
+              <option value="false">Tidak</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="track_iou">Track IoU</label>
+            <div class="slider-container">
+              <input type="range" id="track_iou_slider" min="0.1" max="0.7" value="0.3" step="0.05">
+              <span id="track_iou_value" class="slider-value">0.3</span>
+            </div>
+            <input type="hidden" id="track_iou" value="0.3" />
+          </div>
+
+          <div class="form-group">
+            <label for="track_max_miss">Track Max Miss</label>
+            <div class="number-input-container">
+              <button type="button" class="number-btn" id="track_max_miss_decrease">-</button>
+              <input type="number" id="track_max_miss" value="5" min="0" max="20" readonly>
+              <button type="button" class="number-btn" id="track_max_miss_increase">+</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="checkbox-group">
           <input type="checkbox" id="keep_audio" />
-          Keep audio (butuh ffmpeg)
-        </label>
-      </div>
+          <label for="keep_audio">Pertahankan Audio (membutuhkan ffmpeg)</label>
+        </div>
 
-      <button type="submit">Proses Video</button>
-      <div id="status"></div>
-    </fieldset>
-  </form>
+        <button type="submit" class="btn">
+          <i>🚀</i> Proses Video
+        </button>
+
+        <div class="progress-section">
+          <div class="status-container">
+            <div id="status">Siap memproses video...</div>
+            <div class="progress-percent" id="percent">0%</div>
+          </div>
+          <div class="progress-bar">
+            <div id="bar" class="progress-fill"></div>
+          </div>
+          <div id="hint" class="muted"></div>
+        </div>
+      </form>
+
+      <div class="info-box">
+        <div class="info-title">Tips untuk Hasil Terbaik</div>
+        <div class="info-text">
+          • Gunakan ukuran blok pixel yang sesuai dengan resolusi video<br>
+          • Atur rasio padding untuk menyesuaikan area blur di sekitar wajah<br>
+          • Nilai kepercayaan yang lebih tinggi akan mendeteksi wajah dengan lebih akurat<br>
+          • Rotasi dapat membantu jika video direkam dalam orientasi yang salah
+        </div>
+      </div>
+    </div>
+  </div>
 
   <script>
+    // Inisialisasi slider dan komponen interaktif
+    document.addEventListener('DOMContentLoaded', function() {
+      // Slider untuk block_size
+      const blockSizeSlider = document.getElementById('block_size_slider');
+      const blockSizeValue = document.getElementById('block_size_value');
+      const blockSizeInput = document.getElementById('block_size');
+      
+      blockSizeSlider.addEventListener('input', function() {
+        blockSizeValue.textContent = this.value;
+        blockSizeInput.value = this.value;
+      });
+      
+      // Slider untuk conf
+      const confSlider = document.getElementById('conf_slider');
+      const confValue = document.getElementById('conf_value');
+      const confInput = document.getElementById('conf');
+      
+      confSlider.addEventListener('input', function() {
+        confValue.textContent = this.value;
+        confInput.value = this.value;
+      });
+      
+      // Slider untuk track_iou
+      const trackIouSlider = document.getElementById('track_iou_slider');
+      const trackIouValue = document.getElementById('track_iou_value');
+      const trackIouInput = document.getElementById('track_iou');
+      
+      trackIouSlider.addEventListener('input', function() {
+        trackIouValue.textContent = this.value;
+        trackIouInput.value = this.value;
+      });
+      
+      // Dropdown untuk pad_ratio
+      const padRatioDisplay = document.getElementById('pad_ratio_display');
+      const padRatioOptions = document.getElementById('pad_ratio_options');
+      const padRatioInput = document.getElementById('pad_ratio');
+      
+      padRatioDisplay.addEventListener('click', function() {
+        padRatioOptions.classList.toggle('show');
+      });
+      
+      document.querySelectorAll('#pad_ratio_options .dropdown-option').forEach(option => {
+        option.addEventListener('click', function() {
+          const value = this.getAttribute('data-value');
+          padRatioDisplay.value = value;
+          padRatioInput.value = value;
+          padRatioOptions.classList.remove('show');
+        });
+      });
+      
+      // Tutup dropdown ketika klik di luar
+      document.addEventListener('click', function(e) {
+        if (!e.target.closest('.dropdown-container')) {
+          padRatioOptions.classList.remove('show');
+        }
+      });
+      
+      // Tombol untuk nms_iou
+      const nmsIouInput = document.getElementById('nms_iou');
+      const nmsIouDecrease = document.getElementById('nms_iou_decrease');
+      const nmsIouIncrease = document.getElementById('nms_iou_increase');
+      
+      nmsIouDecrease.addEventListener('click', function() {
+        let value = parseFloat(nmsIouInput.value);
+        if (value > 0.3) {
+          value -= 0.05;
+          nmsIouInput.value = value.toFixed(2);
+        }
+      });
+      
+      nmsIouIncrease.addEventListener('click', function() {
+        let value = parseFloat(nmsIouInput.value);
+        if (value < 0.7) {
+          value += 0.05;
+          nmsIouInput.value = value.toFixed(2);
+        }
+      });
+      
+      // Tombol untuk track_max_miss
+      const trackMaxMissInput = document.getElementById('track_max_miss');
+      const trackMaxMissDecrease = document.getElementById('track_max_miss_decrease');
+      const trackMaxMissIncrease = document.getElementById('track_max_miss_increase');
+      
+      trackMaxMissDecrease.addEventListener('click', function() {
+        let value = parseInt(trackMaxMissInput.value);
+        if (value > 0) {
+          value -= 1;
+          trackMaxMissInput.value = value;
+        }
+      });
+      
+      trackMaxMissIncrease.addEventListener('click', function() {
+        let value = parseInt(trackMaxMissInput.value);
+        if (value < 20) {
+          value += 1;
+          trackMaxMissInput.value = value;
+        }
+      });
+    });
+
+    // Kode untuk pemrosesan video (tetap sama)
     const frm = document.getElementById('frm');
     const statusEl = document.getElementById('status');
+    const percentEl = document.getElementById('percent');
+    const bar = document.getElementById('bar');
+    const hint = document.getElementById('hint');
+    let pollTimer = null, currentJob = null;
+
+    function setProgress(pct, text) {
+      const percent = pct || 0;
+      bar.style.width = percent + '%';
+      percentEl.textContent = percent + '%';
+      statusEl.textContent = text || '';
+    }
+
+    async function poll(jobId) {
+      try {
+        const res = await fetch('/api/progress/' + jobId);
+        const j = await res.json();
+        if (!j.ok) throw new Error(j.error || 'progress error');
+        setProgress(j.percent, `Memproses... ${j.percent}%`);
+        hint.textContent = j.total ? `Frame: ${j.current}/${j.total}` : `Frame terproses: ${j.current} (estimasi)`;
+        if (j.status === 'done') {
+          clearInterval(pollTimer); pollTimer = null;
+          statusEl.textContent = 'Selesai. Mengunduh hasil...';
+          bar.style.width = '100%';
+          percentEl.textContent = '100%';
+          const a = document.createElement('a');
+          a.href = '/api/download/' + jobId;
+          a.download = '';
+          document.body.appendChild(a); a.click(); a.remove();
+          statusEl.textContent = 'Selesai. File hasil sudah diunduh.';
+          currentJob = null;
+        } else if (j.status === 'error') {
+          clearInterval(pollTimer); pollTimer = null;
+          statusEl.textContent = 'Gagal: ' + (j.error || 'Terjadi kesalahan.');
+          currentJob = null;
+        }
+      } catch (e) {
+        clearInterval(pollTimer); pollTimer = null;
+        statusEl.textContent = 'Gagal memeriksa progress: ' + e.message;
+        currentJob = null;
+      }
+    }
 
     frm.addEventListener('submit', async (e) => {
       e.preventDefault();
+      if (currentJob) return;
+
       const file = document.getElementById('file').files[0];
       if (!file) { alert('Pilih file video terlebih dahulu'); return; }
 
       const fd = new FormData();
       fd.append('file', file);
-      fd.append('mode', document.getElementById('mode').value);
-      fd.append('strength', document.getElementById('strength').value);
-      fd.append('padding', document.getElementById('padding').value);
+      fd.append('block_size', document.getElementById('block_size').value);
+      fd.append('pad_ratio', document.getElementById('pad_ratio').value);
       fd.append('rotate', document.getElementById('rotate').value);
       fd.append('conf', document.getElementById('conf').value);
+      fd.append('nms_iou', document.getElementById('nms_iou').value);
+      fd.append('use_flip', document.getElementById('use_flip').value === 'true' ? 'true' : 'false');
+      fd.append('track_iou', document.getElementById('track_iou').value);
+      fd.append('track_max_miss', document.getElementById('track_max_miss').value);
       fd.append('keep_audio', document.getElementById('keep_audio').checked ? 'true' : 'false');
 
-      statusEl.textContent = 'Memproses... (durasi tergantung panjang video)';
+      setProgress(0, 'Menyiapkan pemrosesan...');
+      hint.textContent = '';
       try {
-        const res = await fetch('/api/blur-video', { method: 'POST', body: fd });
-        if (!res.ok) {
-          const err = await res.json().catch(() => ({}));
-          throw new Error(err.error || res.statusText);
-        }
-        const disp = res.headers.get('Content-Disposition') || '';
-        const m = /filename="?([^"]+)"?/.exec(disp);
-        const filename = m ? m[1] : 'censored.mp4';
-        const blob = await res.blob();
-        const url = URL.createObjectURL(blob);
-
-        const a = document.createElement('a');
-        a.href = url; a.download = filename;
-        document.body.appendChild(a); a.click(); a.remove();
-        URL.revokeObjectURL(url);
-
-        statusEl.textContent = 'Selesai. File hasil diunduh.';
+        const res = await fetch('/api/blur-video-start', { method: 'POST', body: fd });
+        const j = await res.json();
+        if (!j.ok) throw new Error(j.error || 'Gagal memulai pemrosesan.');
+        currentJob = j.job_id;
+        setProgress(2, 'Memproses... 2%');
+        pollTimer = setInterval(() => poll(currentJob), 800);
       } catch (err) {
         statusEl.textContent = 'Gagal: ' + err.message;
       }
