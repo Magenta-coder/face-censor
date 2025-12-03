@@ -657,12 +657,32 @@
       }
     }
 
+    function showError(msg) {
+      statusEl.textContent = msg;
+      statusEl.style.color = "#d00000";
+      percentEl.textContent = "0%";
+      bar.style.width = "0%";
+      hint.textContent = "";
+    }
+
     frm.addEventListener('submit', async (e) => {
       e.preventDefault();
       if (currentJob) return;
 
       const file = document.getElementById('file').files[0];
-      if (!file) { alert('Pilih file video terlebih dahulu'); return; }
+      if (!file) {
+        showError("Silakan pilih file video terlebih dahulu.");
+        return;
+      }
+
+      // ⭐ VALIDASI TIPE FILE VIDEO
+      if (!file.type.startsWith("video/")) {
+        showError("File yang dipilih bukan video. Harap unggah file video (mp4, mov, mkv, dll).");
+        return;
+      }
+
+      // Reset warna status ketika valid
+      statusEl.style.color = "#212529";
 
       const fd = new FormData();
       fd.append('file', file);
@@ -686,7 +706,7 @@
         setProgress(2, 'Memproses... 2%');
         pollTimer = setInterval(() => poll(currentJob), 800);
       } catch (err) {
-        statusEl.textContent = 'Gagal: ' + err.message;
+        showError("❌ Gagal: " + err.message);
       }
     });
   </script>
