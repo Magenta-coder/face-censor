@@ -108,10 +108,46 @@
     }
 
     label {
-      display: block;
+      display: flex;
+      align-items: center;
       margin-bottom: 0.5rem;
       font-weight: 500;
       color: var(--dark);
+      gap: 6px;
+    }
+
+    /* Tooltip Styling */
+    .tooltip {
+      display: inline-block;
+      position: relative;
+      cursor: pointer;
+      font-size: 0.95rem;
+      color: var(--primary);
+      font-weight: bold;
+    }
+
+    .tooltip:hover::after {
+      content: attr(data-tip);
+      position: absolute;
+      top: 120%;
+      left: 0;
+      width: max-content;
+      max-width: 260px;
+      background: white;
+      color: var(--dark);
+      padding: 10px 14px;
+      border-radius: var(--border-radius);
+      box-shadow: var(--shadow);
+      font-size: 0.85rem;
+      line-height: 1.4;
+      z-index: 999;
+      border-left: 4px solid var(--primary);
+      animation: fadeIn 0.2s ease-in-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-4px); }
+      to { opacity: 1; transform: translateY(0); }
     }
 
     input, select {
@@ -130,7 +166,6 @@
       box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.2);
     }
 
-    /* Styling untuk slider */
     .slider-container {
       display: flex;
       align-items: center;
@@ -171,7 +206,6 @@
       border-radius: var(--border-radius);
     }
 
-    /* Styling untuk dropdown dengan nilai preset */
     .dropdown-container {
       position: relative;
     }
@@ -205,7 +239,6 @@
       background: var(--light);
     }
 
-    /* Styling untuk input number dengan tombol */
     .number-input-container {
       display: flex;
       align-items: center;
@@ -274,22 +307,6 @@
       background: linear-gradient(135deg, var(--primary-dark), var(--secondary));
     }
 
-    .btn:active {
-      transform: translateY(0);
-    }
-
-    .btn:disabled {
-      background: var(--light-gray);
-      color: var(--gray);
-      cursor: not-allowed;
-      transform: none;
-      box-shadow: none;
-    }
-
-    .btn i {
-      margin-right: 0.5rem;
-    }
-
     .progress-section {
       margin-top: 2rem;
     }
@@ -333,25 +350,6 @@
       font-size: 0.9rem;
     }
 
-    .info-box {
-      background-color: var(--light);
-      border-left: 4px solid var(--primary);
-      padding: 1rem;
-      border-radius: 0 var(--border-radius) var(--border-radius) 0;
-      margin-top: 1.5rem;
-    }
-
-    .info-title {
-      font-weight: 600;
-      margin-bottom: 0.5rem;
-      color: var(--dark);
-    }
-
-    .info-text {
-      color: var(--gray);
-      font-size: 0.9rem;
-    }
-
     @media (max-width: 768px) {
       .container {
         padding: 1rem;
@@ -371,16 +369,12 @@
       
       .slider-container {
         flex-direction: column;
-        align-items: stretch;
         gap: 0.5rem;
-      }
-      
-      .slider-value {
-        align-self: center;
       }
     }
   </style>
 </head>
+
 <body>
   <div class="container">
     <header>
@@ -390,21 +384,26 @@
 
     <div class="card">
       <div class="card-header">
-        <div class="card-icon">
-          <i>⚙️</i>
-        </div>
+        <div class="card-icon"><i>⚙️</i></div>
         <h2 class="card-title">Pengaturan Pemrosesan Video</h2>
       </div>
 
       <form id="frm">
         <div class="form-grid">
+
           <div class="form-group">
-            <label for="file">File Video</label>
+            <label for="file">
+              File Video 
+              <span class="tooltip" data-tip="Video yang akan diproses untuk disensor wajahnya.">ℹ️</span>
+            </label>
             <input type="file" id="file" accept="video/*" required />
           </div>
 
           <div class="form-group">
-            <label for="block_size">Ukuran Blok Pixel</label>
+            <label for="block_size">
+              Ukuran Blok Pixel 
+              <span class="tooltip" data-tip="Semakin besar nilainya, sensor wajah jadi semakin kasar dan aman.">ℹ️</span>
+            </label>
             <div class="slider-container">
               <input type="range" id="block_size_slider" min="6" max="60" value="18" step="1">
               <span id="block_size_value" class="slider-value">18</span>
@@ -413,7 +412,10 @@
           </div>
 
           <div class="form-group">
-            <label for="pad_ratio">Rasio Padding</label>
+            <label for="pad_ratio">
+              Rasio Padding 
+              <span class="tooltip" data-tip="Tambahan area blur di sekitar wajah. Berguna jika wajah banyak bergerak.">ℹ️</span>
+            </label>
             <div class="dropdown-container">
               <input type="text" id="pad_ratio_display" value="0.25" readonly>
               <div class="dropdown-options" id="pad_ratio_options">
@@ -428,7 +430,10 @@
           </div>
 
           <div class="form-group">
-            <label for="rotate">Rotasi</label>
+            <label for="rotate">
+              Rotasi 
+              <span class="tooltip" data-tip="Memutar video untuk memperbaiki orientasi yang salah atau terbalik.">ℹ️</span>
+            </label>
             <select id="rotate">
               <option value="0">0°</option>
               <option value="90">90°</option>
@@ -438,7 +443,10 @@
           </div>
 
           <div class="form-group">
-            <label for="conf">Tingkat Kepercayaan</label>
+            <label for="conf">
+              Tingkat Kepercayaan 
+              <span class="tooltip" data-tip="Menentukan seberapa yakin sistem harus mendeteksi wajah sebelum disensor.">ℹ️</span>
+            </label>
             <div class="slider-container">
               <input type="range" id="conf_slider" min="0.1" max="0.9" value="0.5" step="0.05">
               <span id="conf_value" class="slider-value">0.5</span>
@@ -447,7 +455,10 @@
           </div>
 
           <div class="form-group">
-            <label for="nms_iou">NMS IoU</label>
+            <label for="nms_iou">
+              NMS IoU 
+              <span class="tooltip" data-tip="Menyatukan deteksi ganda agar hanya satu kotak wajah yang digunakan.">ℹ️</span>
+            </label>
             <div class="number-input-container">
               <button type="button" class="number-btn" id="nms_iou_decrease">-</button>
               <input type="number" id="nms_iou" value="0.45" step="0.05" min="0.3" max="0.7" readonly>
@@ -456,7 +467,10 @@
           </div>
 
           <div class="form-group">
-            <label for="use_flip">Gunakan Flip</label>
+            <label for="use_flip">
+              Gunakan Flip 
+              <span class="tooltip" data-tip="Menambah pemeriksaan wajah dalam keadaan mirror untuk meningkatkan akurasi.">ℹ️</span>
+            </label>
             <select id="use_flip">
               <option value="true" selected>Ya</option>
               <option value="false">Tidak</option>
@@ -464,7 +478,10 @@
           </div>
 
           <div class="form-group">
-            <label for="track_iou">Track IoU</label>
+            <label for="track_iou">
+              Track IoU 
+              <span class="tooltip" data-tip="Mengatur kemampuan sistem mengikuti wajah yang sama antar frame.">ℹ️</span>
+            </label>
             <div class="slider-container">
               <input type="range" id="track_iou_slider" min="0.1" max="0.7" value="0.3" step="0.05">
               <span id="track_iou_value" class="slider-value">0.3</span>
@@ -473,90 +490,80 @@
           </div>
 
           <div class="form-group">
-            <label for="track_max_miss">Track Max Miss</label>
+            <label for="track_max_miss">
+              Track Max Miss 
+              <span class="tooltip" data-tip="Berapa banyak frame di mana wajah boleh hilang tetapi tetap dianggap sama.">ℹ️</span>
+            </label>
             <div class="number-input-container">
               <button type="button" class="number-btn" id="track_max_miss_decrease">-</button>
               <input type="number" id="track_max_miss" value="5" min="0" max="20" readonly>
               <button type="button" class="number-btn" id="track_max_miss_increase">+</button>
             </div>
           </div>
+
         </div>
 
         <div class="checkbox-group">
           <input type="checkbox" id="keep_audio" />
-          <label for="keep_audio">Pertahankan Audio (membutuhkan ffmpeg)</label>
+          <label for="keep_audio">
+            Pertahankan Audio 
+            <span class="tooltip" data-tip="Menjaga suara asli video tetap ada. Butuh ffmpeg terinstall.">ℹ️</span>
+          </label>
         </div>
 
-        <button type="submit" class="btn">
-          <i>🚀</i> Proses Video
-        </button>
+        <button type="submit" class="btn"><i>🚀</i> Proses Video</button>
 
         <div class="progress-section">
           <div class="status-container">
             <div id="status">Siap memproses video...</div>
             <div class="progress-percent" id="percent">0%</div>
           </div>
-          <div class="progress-bar">
-            <div id="bar" class="progress-fill"></div>
-          </div>
+          <div class="progress-bar"><div id="bar" class="progress-fill"></div></div>
           <div id="hint" class="muted"></div>
         </div>
       </form>
-
-      <div class="info-box">
-        <div class="info-title">Tips untuk Hasil Terbaik</div>
-        <div class="info-text">
-          • Gunakan ukuran blok pixel yang sesuai dengan resolusi video<br>
-          • Atur rasio padding untuk menyesuaikan area blur di sekitar wajah<br>
-          • Nilai kepercayaan yang lebih tinggi akan mendeteksi wajah dengan lebih akurat<br>
-          • Rotasi dapat membantu jika video direkam dalam orientasi yang salah
-        </div>
-      </div>
     </div>
   </div>
 
   <script>
-    // Inisialisasi slider dan komponen interaktif
+    // Slider & dynamic components
     document.addEventListener('DOMContentLoaded', function() {
-      // Slider untuk block_size
       const blockSizeSlider = document.getElementById('block_size_slider');
       const blockSizeValue = document.getElementById('block_size_value');
       const blockSizeInput = document.getElementById('block_size');
-      
+
       blockSizeSlider.addEventListener('input', function() {
         blockSizeValue.textContent = this.value;
         blockSizeInput.value = this.value;
       });
-      
-      // Slider untuk conf
+
       const confSlider = document.getElementById('conf_slider');
       const confValue = document.getElementById('conf_value');
       const confInput = document.getElementById('conf');
-      
+
       confSlider.addEventListener('input', function() {
         confValue.textContent = this.value;
         confInput.value = this.value;
       });
-      
-      // Slider untuk track_iou
+
       const trackIouSlider = document.getElementById('track_iou_slider');
       const trackIouValue = document.getElementById('track_iou_value');
       const trackIouInput = document.getElementById('track_iou');
-      
+
       trackIouSlider.addEventListener('input', function() {
         trackIouValue.textContent = this.value;
         trackIouInput.value = this.value;
       });
-      
-      // Dropdown untuk pad_ratio
+
+      // Dropdown pad ratio
       const padRatioDisplay = document.getElementById('pad_ratio_display');
       const padRatioOptions = document.getElementById('pad_ratio_options');
       const padRatioInput = document.getElementById('pad_ratio');
-      
+
       padRatioDisplay.addEventListener('click', function() {
         padRatioOptions.classList.toggle('show');
       });
-      
+
       document.querySelectorAll('#pad_ratio_options .dropdown-option').forEach(option => {
         option.addEventListener('click', function() {
           const value = this.getAttribute('data-value');
@@ -565,58 +572,47 @@
           padRatioOptions.classList.remove('show');
         });
       });
-      
-      // Tutup dropdown ketika klik di luar
+
       document.addEventListener('click', function(e) {
         if (!e.target.closest('.dropdown-container')) {
           padRatioOptions.classList.remove('show');
         }
       });
-      
-      // Tombol untuk nms_iou
+
+      // NMS IoU increment/decrement
       const nmsIouInput = document.getElementById('nms_iou');
       const nmsIouDecrease = document.getElementById('nms_iou_decrease');
       const nmsIouIncrease = document.getElementById('nms_iou_increase');
-      
+
       nmsIouDecrease.addEventListener('click', function() {
         let value = parseFloat(nmsIouInput.value);
-        if (value > 0.3) {
-          value -= 0.05;
-          nmsIouInput.value = value.toFixed(2);
-        }
+        if (value > 0.3) value = (value - 0.05);
+        nmsIouInput.value = value.toFixed(2);
       });
-      
+
       nmsIouIncrease.addEventListener('click', function() {
         let value = parseFloat(nmsIouInput.value);
-        if (value < 0.7) {
-          value += 0.05;
-          nmsIouInput.value = value.toFixed(2);
-        }
+        if (value < 0.7) value = (value + 0.05);
+        nmsIouInput.value = value.toFixed(2);
       });
-      
-      // Tombol untuk track_max_miss
+
+      // track max miss
       const trackMaxMissInput = document.getElementById('track_max_miss');
       const trackMaxMissDecrease = document.getElementById('track_max_miss_decrease');
       const trackMaxMissIncrease = document.getElementById('track_max_miss_increase');
-      
+
       trackMaxMissDecrease.addEventListener('click', function() {
         let value = parseInt(trackMaxMissInput.value);
-        if (value > 0) {
-          value -= 1;
-          trackMaxMissInput.value = value;
-        }
+        if (value > 0) trackMaxMissInput.value = value - 1;
       });
-      
+
       trackMaxMissIncrease.addEventListener('click', function() {
         let value = parseInt(trackMaxMissInput.value);
-        if (value < 20) {
-          value += 1;
-          trackMaxMissInput.value = value;
-        }
+        if (value < 20) trackMaxMissInput.value = value + 1;
       });
     });
 
-    // Kode untuk pemrosesan video (tetap sama)
+    // Video processing logic
     const frm = document.getElementById('frm');
     const statusEl = document.getElementById('status');
     const percentEl = document.getElementById('percent');
@@ -637,7 +633,7 @@
         const j = await res.json();
         if (!j.ok) throw new Error(j.error || 'progress error');
         setProgress(j.percent, `Memproses... ${j.percent}%`);
-        hint.textContent = j.total ? `Frame: ${j.current}/${j.total}` : `Frame terproses: ${j.current} (estimasi)`;
+        hint.textContent = j.total ? `Frame: ${j.current}/${j.total}` : `Frame terproses: ${j.current}`;
         if (j.status === 'done') {
           clearInterval(pollTimer); pollTimer = null;
           statusEl.textContent = 'Selesai. Mengunduh hasil...';
